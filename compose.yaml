@@ -12,7 +12,7 @@ services:
       - --api.dashboard=true
       - --log.level=DEBUG
       - --log.filePath=/logs/traefik.log
-      - --entrypoints.web.address=:80
+      - --entrypoints.web.address=:${TRAEFIK_WEB_PORT}
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.file.directory=/etc/traefik/dynamic
@@ -21,7 +21,7 @@ services:
     networks:
       - web
     ports:
-      - "80:80"
+      - "${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}"
 
     volumes:
 
@@ -30,7 +30,7 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST}`)"
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.service=api@internal"
 
@@ -44,7 +44,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
     ports:
-      - '${POSTGRES_PORT}:5432'
+      - '${POSTGRES_PORT}:${POSTGRES_INTERNAL_PORT}'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -55,13 +55,14 @@ services:
     restart: unless-stopped
     networks:
       - backend
+      - web
 
   dozzle:
     image: ghcr.io/amir20/dozzle:latest
     profiles: [ "dev", "test", "stage" ]
     container_name: dozzle-${STAGE}
     ports:
-      - "${DOZZLE_PORT}:8080"
+      - "${DOZZLE_PORT}:${DOZZLE_INTERNAL_PORT}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
@@ -71,9 +72,9 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dozzle.rule=Host(`dozzle.localhost`)"
+      - "traefik.http.routers.dozzle.rule=Host(`${DOZZLE_HOST}`)"
       - "traefik.http.routers.dozzle.entrypoints=web"
-      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+      - "traefik.http.services.dozzle.loadbalancer.server.port=${DOZZLE_INTERNAL_PORT}"
       - "traefik.http.middlewares.dozzle-stripprefix.stripprefix.prefixes=/logs"
       - "traefik.http.routers.dozzle.middlewares=dozzle-stripprefix"
 
@@ -81,19 +82,19 @@ services:
     image: minio/minio:${MINIO_TAG}
     profiles: [ "dev", "test", "stage" ]
     container_name: minio-${STAGE}
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":${MINIO_CONSOLE_INTERNAL_PORT}"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
       # Optional: Standard-Bucket-Auto-Create via entrypoint/initjob
     ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${MINIO_PORT:-9000}:${MINIO_INTERNAL_PORT}"
+      - "${MINIO_CONSOLE_PORT:-9001}:${MINIO_CONSOLE_INTERNAL_PORT}"
     volumes:
       - minio_data:/data
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1" ]
+      test: [ "CMD-SHELL", "curl -fsS http://localhost:${MINIO_INTERNAL_PORT}/minio/health/live || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -110,15 +111,36 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
       # MinIO Console (auf separatem Host minio.localhost)
-      - "traefik.http.routers.minio-console.rule=Host(`minio.localhost`)"
+      - "traefik.http.routers.minio-console.rule=Host(`${MINIO_CONSOLE_HOST}`)"
       - "traefik.http.routers.minio-console.entrypoints=web"
       - "traefik.http.routers.minio-console.service=minio-console"
-      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=${MINIO_CONSOLE_INTERNAL_PORT}"
       # MinIO API (auf separatem Host minio-api.localhost)
-      - "traefik.http.routers.minio-api.rule=Host(`minio-api.localhost`)"
+      - "traefik.http.routers.minio-api.rule=Host(`${MINIO_API_HOST}`)"
       - "traefik.http.routers.minio-api.entrypoints=web"
       - "traefik.http.routers.minio-api.service=minio-api"
-      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=${MINIO_INTERNAL_PORT}"
+
+  minio-init:
+    image: minio/mc:latest
+    profiles: [ "dev", "test", "stage" ]
+    container_name: minio-init-${STAGE}
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ./minio-init.sh:/init.sh:ro
+      - ./static/file-1.txt:/data/file-1.txt:ro
+      - ./static/file-2.txt:/data/file-2.txt:ro
+      - ./static/file-3.txt:/data/file-3.txt:ro
+    entrypoint: /bin/sh
+    command: /init.sh
+    restart: "no"
+    networks:
+      - backend
 
 
 volumes:

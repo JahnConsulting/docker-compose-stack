@@ -1,0 +1,3 @@
+Dies ist eine Testdatei mit zufälligem deutschen Text.
+MinIO ist ein hochleistungsfähiges Object Storage System.
+Diese Datei wird beim ersten Start automatisch hochgeladen.

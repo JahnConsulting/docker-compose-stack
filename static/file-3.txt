@@ -1,0 +1,3 @@
+Sample file with random English content.
+This file demonstrates MinIO initialization with Docker Compose.
+It will be uploaded only during the first container startup.
