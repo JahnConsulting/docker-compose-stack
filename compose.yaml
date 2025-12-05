@@ -13,32 +13,26 @@ services:
       - --log.level=DEBUG
       - --log.filePath=/logs/traefik.log
       - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.file.directory=/etc/traefik/dynamic
       - --providers.file.watch=true
-      - --certificatesresolvers.letsencrypt.acme.email=andre.jahn@jahnconsulting.io
-      - --certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
 
+    networks:
+      - web
     ports:
       - "80:80"
-      - "443:443"
+
     volumes:
-      - ./acme:/acme
+
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./logs:/logs
-      - ./traefik_dynamic.yml:/etc/traefik/dynamic/traefik_dynamic.yml:ro # Mountet die dynamische Konfiguration
-      - ./users.htpasswd:/etc/traefik/users.htpasswd:ro # Mountet die htpasswd-Datei
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.jahnconsulting.io`)"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.middlewares=auth@file" # Wendet die Basic Auth Middleware an
 
 
   postgres:
@@ -73,9 +67,18 @@ services:
     environment:
       DOZZLE_LEVEL: info
     restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dozzle.rule=Host(`dozzle.localhost`)"
+      - "traefik.http.routers.dozzle.entrypoints=web"
+      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.dozzle-stripprefix.stripprefix.prefixes=/logs"
+      - "traefik.http.routers.dozzle.middlewares=dozzle-stripprefix"
 
   minio:
-    image: minio/minio:${MINIO_TAG:-RELEASE.2025-09-07T16-13-09Z-cpuv1}
+    image: minio/minio:${MINIO_TAG}
     profiles: [ "dev", "test", "stage" ]
     container_name: minio-${STAGE}
     command: server /data --console-address ":9001"
@@ -102,6 +105,20 @@ services:
     restart: unless-stopped
     networks:
       - backend
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      # MinIO Console (auf separatem Host minio.localhost)
+      - "traefik.http.routers.minio-console.rule=Host(`minio.localhost`)"
+      - "traefik.http.routers.minio-console.entrypoints=web"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+      # MinIO API (auf separatem Host minio-api.localhost)
+      - "traefik.http.routers.minio-api.rule=Host(`minio-api.localhost`)"
+      - "traefik.http.routers.minio-api.entrypoints=web"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
 
 
 volumes:
