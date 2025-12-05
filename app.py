@@ -3,14 +3,18 @@ from flask import Flask
 app = Flask(__name__)
 
 
+
+
 @app.route('/')
 def hello_world():  # put application's code here
+
     return 'Hello World!'
 
 
 @app.route('/api/data', methods=['GET'])
 def get_data():
     """REST API endpoint that returns static HTML text"""
+
     html_content = """
     <html>
         <head>
