@@ -67,24 +67,21 @@ services:
     profiles: [ "dev", "test", "stage" ]
     container_name: dozzle-${STAGE}
     ports:
-      - "${DOZZLE_PORT:-8080}:8080"
+      - "${DOZZLE_PORT}:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       DOZZLE_LEVEL: info
-      DOZZLE_TAILSIZE: 300
     restart: unless-stopped
-    networks:
-      - backend
 
   minio:
     image: minio/minio:${MINIO_TAG:-RELEASE.2025-09-07T16-13-09Z-cpuv1}
-    profiles: [ "dev", "prod" ]
+    profiles: [ "dev", "test", "stage" ]
     container_name: minio-${STAGE}
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
       # Optional: Standard-Bucket-Auto-Create via entrypoint/initjob
     ports:
