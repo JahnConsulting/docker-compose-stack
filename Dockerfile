@@ -1,25 +1,25 @@
-# Basis-Image mit Python
+# Base image with Python
 FROM python:3.12-slim
 
-# Arbeitsverzeichnis im Container
+# Working directory inside the container
 WORKDIR /app
 
-# System-Abhängigkeiten für psycopg2
+# System dependencies for psycopg2
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libpq-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# Requirements zuerst kopieren (bessere Layer-Caches)
+# Copy requirements first (better layer caching)
 COPY requirements.txt .
 
-# Python-Abhängigkeiten installieren
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Restlichen Code kopieren
+# Copy the remaining code
 COPY . .
 
-# Flask-Standardport
+# Flask default port
 EXPOSE 5000
 
-# Startbefehl: Production WSGI Server (gunicorn)
+# Start command: production WSGI server (gunicorn)
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
