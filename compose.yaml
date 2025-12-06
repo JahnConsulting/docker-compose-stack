@@ -2,10 +2,12 @@ name: ${APP_NAME}-${STAGE}
 
 services:
 
+
+
   traefik:
     image: traefik:v3.6.2
     profiles: [ "dev", "test","stage" ]
-    container_name: traefik
+    container_name: traefik-${STAGE}
     restart: always
     command:
       - --api=true
@@ -36,7 +38,7 @@ services:
 
 
   postgres:
-    image: postgres:${POSTGRES_TAG:-17}
+    image: postgres:${POSTGRES_TAG}
     profiles: [ "dev", "test","stage" ]
     container_name: postgres-${STAGE}
     environment:
@@ -93,6 +95,47 @@ services:
     command: -locations=filesystem:/flyway/sql,filesystem:/flyway/sql/dev migrate
     networks:
       - backend
+
+  app:
+    image: registry.digitalocean.com/rocking-container-registry/docker-compose-demo:latest
+    profiles: [ "test", "stage" ]
+    container_name: app-${STAGE}
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_INTERNAL_PORT=${POSTGRES_INTERNAL_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MINIO_ENDPOINT=minio:${MINIO_INTERNAL_PORT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_BUCKET=uploads
+      - FLASK_RUN_HOST=0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: >
+        python -c "import socket; s=socket.socket(); s.settimeout(2);
+        s.connect(('localhost',5000)); s.close()"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.app.rule=Host(`${APP_HOST}`)"
+      - "traefik.http.routers.app.entrypoints=web"
+      - "traefik.http.routers.app.service=app"
+      - "traefik.http.services.app.loadbalancer.server.port=5000"
+
+
 
   dozzle:
     image: ghcr.io/amir20/dozzle:latest
