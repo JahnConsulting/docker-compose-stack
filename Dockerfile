@@ -21,5 +21,5 @@ COPY . .
 # Flask-Standardport
 EXPOSE 5000
 
-# Startbefehl: Flask-Server starten
-CMD ["flask", "run"]
+# Startbefehl: Production WSGI Server (gunicorn)
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]

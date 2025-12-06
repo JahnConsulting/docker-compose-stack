@@ -167,7 +167,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 
-      # Optional: Standard-Bucket-Auto-Create via entrypoint/initjob
+      # Optional: automatically create the default bucket via entrypoint/init job
     ports:
       - "${MINIO_PORT:-9000}:${MINIO_INTERNAL_PORT}"
       - "${MINIO_CONSOLE_PORT:-9001}:${MINIO_CONSOLE_INTERNAL_PORT}"
@@ -190,12 +190,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      # MinIO Console (auf separatem Host minio.localhost)
+      # MinIO console (on separate host minio.localhost)
       - "traefik.http.routers.minio-console.rule=Host(`${MINIO_CONSOLE_HOST}`)"
       - "traefik.http.routers.minio-console.entrypoints=web"
       - "traefik.http.routers.minio-console.service=minio-console"
       - "traefik.http.services.minio-console.loadbalancer.server.port=${MINIO_CONSOLE_INTERNAL_PORT}"
-      # MinIO API (auf separatem Host minio-api.localhost)
+      # MinIO API (on separate host minio-api.localhost)
       - "traefik.http.routers.minio-api.rule=Host(`${MINIO_API_HOST}`)"
       - "traefik.http.routers.minio-api.entrypoints=web"
       - "traefik.http.routers.minio-api.service=minio-api"
