@@ -6,7 +6,7 @@ echo "Waiting for MinIO to be ready..."
 sleep 5
 
 # Configure MinIO client
-mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
+mc alias set myminio http://minio:${MINIO_INTERNAL_PORT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}
 
 # Create bucket if it doesn't exist
 BUCKET_NAME="uploads"

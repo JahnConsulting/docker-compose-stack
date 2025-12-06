@@ -57,6 +57,43 @@ services:
       - backend
       - web
 
+  flyway:
+    image: flyway/flyway:10
+    profiles: [ "test", "stage" ]
+    container_name: flyway-${STAGE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - FLYWAY_URL=jdbc:postgresql://postgres:${POSTGRES_INTERNAL_PORT}/${POSTGRES_DB}
+      - FLYWAY_USER=${POSTGRES_USER}
+      - FLYWAY_PASSWORD=${POSTGRES_PASSWORD}
+      - FLYWAY_CONNECT_RETRIES=10
+    volumes:
+      - ./flyway/sql:/flyway/sql:ro
+    command: -locations=filesystem:/flyway/sql migrate
+    networks:
+      - backend
+
+  flyway-dev:
+    image: flyway/flyway:10
+    profiles: [ "dev" ]
+    container_name: flyway-dev-${STAGE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - FLYWAY_URL=jdbc:postgresql://postgres:${POSTGRES_INTERNAL_PORT}/${POSTGRES_DB}
+      - FLYWAY_USER=${POSTGRES_USER}
+      - FLYWAY_PASSWORD=${POSTGRES_PASSWORD}
+      - FLYWAY_CONNECT_RETRIES=10
+    volumes:
+      - ./flyway/sql:/flyway/sql:ro
+      - ./flyway/sql/dev:/flyway/sql/dev:ro
+    command: -locations=filesystem:/flyway/sql,filesystem:/flyway/sql/dev migrate
+    networks:
+      - backend
+
   dozzle:
     image: ghcr.io/amir20/dozzle:latest
     profiles: [ "dev", "test", "stage" ]
