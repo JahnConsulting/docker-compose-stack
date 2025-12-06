@@ -7,7 +7,7 @@ WORKDIR /app
 # System dependencies for psycopg2 and security updates
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libpq-dev \
- && apt-get install -y --no-install-recommends --only-upgrade util-linux \
+ && apt-get install -y --no-install-recommends --only-upgrade util-linux tar \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (better layer caching)
