@@ -97,7 +97,7 @@ services:
       - backend
 
   app:
-    image: registry.digitalocean.com/rocking-container-registry/docker-compose-demo:latest
+    image: rockingbit/docker-compose-demo:latest
     profiles: [ "test", "stage" ]
     container_name: app-${STAGE}
     environment:
