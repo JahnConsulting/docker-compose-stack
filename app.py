@@ -328,8 +328,8 @@ def hello_world():  # put application's code here
             <main class="shell">
                 <header class="shell-header">
                     <div class="title-block">
-                        <h1>Data Access Example</h1>
-                        <p>Access example data from MinIO and Postgres</p>
+                        <h1>Docker Compose Tech-Stack Example</h1>
+                        <p>Data access example data from MinIO and Postgres</p>
                     </div>
                     <div class="badge">
                         <span class="status-dot"></span>
