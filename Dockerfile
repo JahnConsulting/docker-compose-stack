@@ -1,5 +1,5 @@
-# Base image with Python
-FROM python:3.12-slim
+# Base image with Python (updated to latest stable minor for security fixes)
+FROM python:3.14-slim
 
 # Working directory inside the container
 WORKDIR /app
@@ -10,6 +10,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && apt-get install -y --no-install-recommends --only-upgrade util-linux tar \
  && rm -rf /var/lib/apt/lists/*
 
+# Create an unprivileged user and group to run the app
+# Use a fixed UID/GID to avoid permission drift with mounted volumes
+RUN groupadd -g 10001 app && \
+    useradd -r -u 10001 -g app app
+
 # Copy requirements first (better layer caching)
 COPY requirements.txt .
 
@@ -19,6 +24,12 @@ RUN python -m pip install --no-cache-dir --upgrade 'pip>=25.0.2' \
 
 # Copy the remaining code
 COPY . .
+
+# Ensure the application directory is owned by the unprivileged user
+RUN chown -R app:app /app
+
+# Switch to the non-root user for runtime
+USER app:app
 
 # Flask default port
 EXPOSE 5000
