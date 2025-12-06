@@ -40,6 +40,16 @@ def hello_world():  # put application's code here
     db_user = os.getenv("POSTGRES_USER")
     db_password = os.getenv("POSTGRES_PASSWORD")
 
+    # Traefik-routed service URLs (Dozzle, Traefik Dashboard, MinIO Console)
+    scheme = os.getenv("TRAEFIK_SCHEME", "http")
+    dozzle_host = os.getenv("DOZZLE_HOST")
+    traefik_host = os.getenv("TRAEFIK_HOST")
+    minio_console_host = os.getenv("MINIO_CONSOLE_HOST")
+
+    dozzle_url = f"{scheme}://{dozzle_host}" if dozzle_host else "#"
+    traefik_url = f"{scheme}://{traefik_host}" if traefik_host else "#"
+    minio_console_url = f"{scheme}://{minio_console_host}" if minio_console_host else "#"
+
     customer_rows = ""
     if not all([db_port, db_name, db_user, db_password]):
         missing = [name for name, value in [
@@ -307,14 +317,19 @@ def hello_world():  # put application's code here
                 .footer span {{
                     opacity: 0.8;
                 }}
+
+                .footer-links a + span,
+                .footer-links span + a {{
+                    margin: 0 4px;
+                }}
             </style>
         </head>
         <body>
             <main class="shell">
                 <header class="shell-header">
                     <div class="title-block">
-                        <h1>Storage & Customer Overview</h1>
-                        <p>MinIO Objektspeicher und Postgres-Kundendaten in einer schlanken Admin-Ansicht.</p>
+                        <h1>Data Access Example</h1>
+                        <p>Access example data from MinIO and Postgres</p>
                     </div>
                     <div class="badge">
                         <span class="status-dot"></span>
@@ -327,7 +342,7 @@ def hello_world():  # put application's code here
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title">MinIO Files</h2>
-                                <p class="panel-subtitle">Objekte im Bucket und ihre Metadaten.</p>
+                                <p class="panel-subtitle">MinIO Buckets and Metadata.</p>
                             </div>
                             <div class="bucket-pill">
                                 Bucket
@@ -354,7 +369,7 @@ def hello_world():  # put application's code here
                         <div class="panel-header">
                             <div>
                                 <h2 class="panel-title">Customers</h2>
-                                <p class="panel-subtitle">Daten aus der Postgres-Datenbank.</p>
+                                <p class="panel-subtitle">Postgres data</p>
                             </div>
                         </div>
                         <div class="table-wrapper">
@@ -375,7 +390,11 @@ def hello_world():  # put application's code here
                 </section>
 
                 <footer class="footer">
-                    <span>Compose Demo UI · MinIO · Postgres</span>
+                    <span class="footer-links">
+                        <a href="{dozzle_url}" target="_blank" rel="noopener noreferrer">Dozzle</a><span>·</span>
+                        <a href="{traefik_url}" target="_blank" rel="noopener noreferrer">Traefik</a><span>·</span>
+                        <a href="{minio_console_url}" target="_blank" rel="noopener noreferrer">MinIO</a>
+                    </span>
                     <span><a href="https://www.jahnconsulting.io" target="_blank">Jahn Consulting</a></span>
                 </footer>
             </main>
