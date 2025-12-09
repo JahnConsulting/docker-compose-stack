@@ -12,7 +12,8 @@ It includes a reverse proxy, database with migrations, S3 storage, a log viewer,
 
 
 ## Create the required environment file
-touch .env
+`cd docker-compose-stack`  
+`touch .env`
 
 ### Set credentials
 
@@ -36,9 +37,9 @@ MINIO_SECRET_KEY=
 ---
 
 ## Install dependencies
-`python3 -m venv .venv`
-`source .venv/bin/activate`
-`pip install -r requirements.txt`
+`python3 -m venv .venv`   
+`source .venv/bin/activate`  
+`pip install -r requirements.txt`  
 
 ## Run the app
 
