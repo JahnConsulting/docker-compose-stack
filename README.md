@@ -28,11 +28,7 @@ MINIO_SECRET_KEY=
 ## Start the stack (dev mode)
   `docker compose   --env-file dev.env    --env-file .env    --profile dev up -d`
 
-## Stop the stack
-`docker compose   --env-file dev.env    --env-file .env    --profile dev down`
-
-##Stop and remove volumes
-`docker compose   --env-file dev.env    --env-file .env    --profile dev down -v`
+  URL: http://127.0.0.1:5000
 
 ---
 
