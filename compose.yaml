@@ -229,7 +229,7 @@ volumes:
   minio_data:
 
 networks:
-  web:
+  web-${STAGE}:
     name: web-${STAGE}
-  backend:
+  backend-${STAGE}:
     name: backend-${STAGE}
