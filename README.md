@@ -353,6 +353,72 @@ Profile: `test` or `stage`
 
 - Full stack for integration testing
 
+---
+
+# Architecture
+
+## C4 Container Diagram
+
+```mermaid
+C4Context
+    title Docker Compose Stack - C4 Container Diagram
+
+    Person(user, "User", "Accesses services via browser")
+
+    Enterprise_Boundary(docker, "Docker Compose Stack") {
+        
+        System_Boundary(proxy, "Reverse Proxy Layer") {
+            Container(traefik, "Traefik", "v3.6.2", "Reverse proxy & load balancer")
+        }
+
+        System_Boundary(app_layer, "Application Layer") {
+            Container(app, "App", "Flask/Python", "Main application - Port 5000")
+            Container(dozzle, "Dozzle", "Log Viewer", "Container log viewer")
+        }
+
+        System_Boundary(data_layer, "Data Layer") {
+            ContainerDb(postgres, "PostgreSQL", "Database", "Relational database")
+            Container(minio, "MinIO", "S3-compatible", "Object storage - API + Console")
+        }
+
+        System_Boundary(init_layer, "Initialization Jobs") {
+            Container(flyway, "Flyway", "DB Migration", "Database schema migrations")
+            Container(minio_init, "MinIO Init", "mc client", "Bucket setup & test data")
+        }
+
+    }
+
+    Rel(user, traefik, "HTTP", "Port 80/8080")
+    Rel(traefik, app, "Routes to", "app.localhost")
+    Rel(traefik, dozzle, "Routes to", "dozzle.localhost")
+    Rel(traefik, minio, "Routes to", "minio.localhost")
+    
+    Rel(app, postgres, "SQL", "backend network")
+    Rel(app, minio, "S3 API", "backend network")
+    
+    Rel(flyway, postgres, "Migrations", "depends_on healthy")
+    Rel(minio_init, minio, "Setup", "depends_on healthy")
+    
+    Rel(dozzle, traefik, "Docker Socket", "Reads container logs")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="2")
+```
+
+## Stack Overview
+
+| Layer | Services | Networks |
+|-------|----------|----------|
+| **Proxy** | Traefik | web |
+| **Application** | App, Dozzle | web, backend |
+| **Data** | PostgreSQL, MinIO | web, backend |
+| **Initialization** | Flyway, MinIO-Init | backend |
+
+## Service Dependencies
+
+- **App** → PostgreSQL (healthy), MinIO (healthy)
+- **Flyway** → PostgreSQL (healthy)
+- **MinIO-Init** → MinIO (healthy)
+
 
 
 
