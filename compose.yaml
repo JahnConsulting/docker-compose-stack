@@ -21,7 +21,7 @@ services:
       - --providers.file.watch=true
 
     networks:
-      - web
+      - web-${STAGE}
     ports:
       - "${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}"
 
@@ -56,8 +56,8 @@ services:
       start_period: 10s
     restart: unless-stopped
     networks:
-      - backend
-      - web
+      - backend-${STAGE}
+      - web-${STAGE}
 
   flyway:
     image: flyway/flyway:10
@@ -75,7 +75,7 @@ services:
       - ./flyway/sql:/flyway/sql:ro
     command: -locations=filesystem:/flyway/sql migrate
     networks:
-      - backend
+      - backend-${STAGE}
 
   flyway-dev:
     image: flyway/flyway:10
@@ -94,7 +94,7 @@ services:
       - ./flyway/sql/dev:/flyway/sql/dev:ro
     command: -locations=filesystem:/flyway/sql,filesystem:/flyway/sql/dev migrate
     networks:
-      - backend
+      - backend-${STAGE}
 
   app:
     image: rockingbit/docker-compose-demo:latest
@@ -125,8 +125,8 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - backend
-      - web
+      - backend-${STAGE}
+      - web-${STAGE}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
@@ -149,11 +149,11 @@ services:
       DOZZLE_LEVEL: info
     restart: unless-stopped
     networks:
-      - web
+      - web-${STAGE}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle.rule=Host(`${DOZZLE_HOST}`)"
-      - "traefik.http.routers.dozzle.entrypoints=web"
+      - "traefik.http.routers.dozzle.entrypoints=web-${STAGE}"
       - "traefik.http.services.dozzle.loadbalancer.server.port=${DOZZLE_INTERNAL_PORT}"
       - "traefik.http.middlewares.dozzle-stripprefix.stripprefix.prefixes=/logs"
       - "traefik.http.routers.dozzle.middlewares=dozzle-stripprefix"
@@ -185,11 +185,11 @@ services:
       - /tmp:rw,noexec,nosuid,nodev
     restart: unless-stopped
     networks:
-      - backend
-      - web
+      - backend-${STAGE}
+      - web-${STAGE}
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=web"
+      - "traefik.docker.network=web-${STAGE}"
       # MinIO console (on separate host minio.localhost)
       - "traefik.http.routers.minio-console.rule=Host(`${MINIO_CONSOLE_HOST}`)"
       - "traefik.http.routers.minio-console.entrypoints=web"
@@ -221,7 +221,7 @@ services:
     command: /init.sh
     restart: "no"
     networks:
-      - backend
+      - backend-${STAGE}
 
 
 volumes:
@@ -230,6 +230,6 @@ volumes:
 
 networks:
   web:
-    name: web
+    name: web-${STAGE}
   backend:
-    internal: true
+    name: backend-${STAGE}
