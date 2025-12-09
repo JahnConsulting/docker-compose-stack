@@ -230,6 +230,6 @@ volumes:
 
 networks:
   web:
-    external: true
+    name: web
   backend:
     internal: true

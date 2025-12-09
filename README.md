@@ -1,18 +1,20 @@
+# Summary
 
+This Compose stack provides a reproducible environment for development, test, and staging.  
+It includes a reverse proxy, database with migrations, S3 storage, a log viewer, and a demo application—all wired together with Traefik routing and environment-variable-based configuration.
 
 
 # TLDR;
 
 ## Clone the repository
+`git clone https://github.com/JahnConsulting/docker-compose-stack.git` 
 
-## Create the required networks
-`docker network create web`  
-`docker network create backend`
+
 
 ## Create the required environment file
 touch .env
 
-## Set credentials
+### Set credentials
 
 POSTGRES_PASSWORD=  
 POSTGRES_USER=  
@@ -34,14 +36,15 @@ MINIO_SECRET_KEY=
 ---
 
 ## Install dependencies
-
+`python3 -m venv .venv`
+`source .venv/bin/activate`
 `pip install -r requirements.txt`
 
 ## Run the app
 
 `set -a && source dev.env && source .env && set +a && python app.py` 
 
-## Overview
+# Overview
 
 This repository provides a full Docker Compose stack for a demo application.  
 The stack includes:
@@ -108,17 +111,17 @@ docker compose \   --env-file test.env \   --env-file .env \   --profile test do
 
 All services are routed through Traefik based on hostnames:
 
-- Traefik Dashboard: `http://<TRAEFIK_HOST>`
+- Traefik Dashboard: `http://traefik.lvh.me`
 
-- Example App: `http://<APP_HOST>`
+- Example App: `http://app.lvh.me`
 
-- MinIO API: `http://<MINIO_API_HOST>`
+- MinIO API: `http://minio-api.lvh.me`
 
-- MinIO Console: `http://<MINIO_CONSOLE_HOST>`
+- MinIO Console: `http://minio-console.lvh.me`
 
-- Dozzle: `http://<DOZZLE_HOST>`
+- Dozzle: `http://dozzle.lvh.me`
 
-- Postgres: `localhost:<POSTGRES_PORT>`
+- Postgres: `localhost:5432`
 
 
 These values must be defined per stage in the respective `.env` file.
@@ -351,9 +354,5 @@ Profile: `test` or `stage`
 - Full stack for integration testing
 
 
----
 
-# Summary
 
-This Compose stack provides a reproducible environment for development, test, and staging.  
-It includes a reverse proxy, database with migrations, S3 storage, a log viewer, and a demo application—all wired together with Traefik routing and environment-variable-based configuration.
