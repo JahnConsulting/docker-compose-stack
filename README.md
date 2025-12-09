@@ -39,7 +39,7 @@ MINIO_SECRET_KEY=
 
 ## Run the app
 
-`set -a && source dev.env && source .env && set +a && python app.py` 
+`(set -a && source dev.env && source .env && set +a && python app.py)` 
 
 # Overview
 
