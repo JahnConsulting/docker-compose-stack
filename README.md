@@ -1,3 +1,46 @@
+
+
+
+# TLDR;
+
+## Clone the repository
+
+## Create the required networks
+`docker network create web`  
+`docker network create backend`
+
+## Create the required environment file
+touch .env
+
+## Set credentials
+
+POSTGRES_PASSWORD=  
+POSTGRES_USER=  
+MINIO_ROOT_PASSWORD=  
+MINIO_ROOT_USER=  
+MINIO_ACCESS_KEY=  
+MINIO_SECRET_KEY=  
+
+
+## Start the stack (dev mode)
+  `docker compose   --env-file dev.env    --env-file .env    --profile dev up -d`
+
+## Stop the stack
+`docker compose   --env-file dev.env    --env-file .env    --profile dev down`
+
+##Stop and remove volumes
+`docker compose   --env-file dev.env    --env-file .env    --profile dev down -v`
+
+---
+
+## Install dependencies
+
+`pip install -r requirements.txt`
+
+## Run the app
+
+`set -a && source dev.env && source .env && set +a && python app.py` 
+
 ## Overview
 
 This repository provides a full Docker Compose stack for a demo application.  
@@ -48,15 +91,16 @@ The Compose file relies heavily on environment variables. Stages are configured 
 
 Example for **test**:
 
-`docker compose \   --env-file test.env \   --env-file .env \   --profile test up -d`
-
+```text 
+docker compose   --env-file test.env    --env-file .env    --profile test up -d
+```
 ### Stop the stack
 
-`docker compose \   --env-file test.env \   --env-file .env \   --profile test down`
+docker compose \   --env-file test.env \   --env-file .env \   --profile test down
 
 ### Stop and remove volumes
 
-`docker compose \   --env-file test.env \   --env-file .env \   --profile test down -v`
+docker compose \   --env-file test.env \   --env-file .env \   --profile test down -v
 
 ---
 
@@ -252,9 +296,14 @@ Deletion requires running `docker compose … down -v`.
 Never committed.
 
 Required keys:
-
-`POSTGRES_PASSWORD= POSTGRES_USER= MINIO_ROOT_PASSWORD= MINIO_ROOT_USER= MINIO_ACCESS_KEY= MINIO_SECRET_KEY=`
-
+```text
+POSTGRES_PASSWORD= 
+POSTGRES_USER= 
+MINIO_ROOT_PASSWORD= 
+MINIO_ROOT_USER= 
+MINIO_ACCESS_KEY= 
+MINIO_SECRET_KEY=
+```
 ### Stage-specific env (e.g. dev.env, test.env)
 
 Contains:

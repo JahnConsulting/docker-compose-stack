@@ -12,7 +12,7 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():  # put application's code here
 
-    endpoint = os.getenv("MINIO_ENDPOINT", f"{os.getenv('MINIO_API_HOST', 'minio-api.localhost')}")
+    endpoint = os.getenv("MINIO_ENDPOINT", f"{os.getenv('MINIO_API_HOST', 'minio-api.lvh.me')}")
     access_key = os.getenv("MINIO_ROOT_USER", os.getenv("MINIO_ACCESS_KEY", "minio"))
     secret_key = os.getenv("MINIO_ROOT_PASSWORD", os.getenv("MINIO_SECRET_KEY", "minio123"))
     bucket_name = os.getenv("MINIO_BUCKET", "uploads")
