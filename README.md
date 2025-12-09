@@ -28,7 +28,7 @@ MINIO_SECRET_KEY=
 ## Start the stack (dev mode)
   `docker compose   --env-file dev.env    --env-file .env    --profile dev up -d`
 
-  URL: http://127.0.0.1:5000
+  
 
 ---
 
@@ -39,8 +39,8 @@ MINIO_SECRET_KEY=
 
 ## Run the app
 
-`(set -a && source dev.env && source .env && set +a && python app.py)` 
-
+`(set -a && source dev.env && source .env && set +a && python app.py)`  
+URL: http://127.0.0.1:5000
 # Overview
 
 This repository provides a full Docker Compose stack for a demo application.  
